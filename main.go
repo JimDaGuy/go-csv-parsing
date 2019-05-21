@@ -53,7 +53,7 @@ func main() {
 		}
 
 		// Convert age string
-		personAge, err3 := strconv.ParseInt(line[2], 10, 0)
+		personAge, err3 := strconv.Atoi(line[2])
 		if err3 != nil {
 			fmt.Printf("Error converting \"%s\" to integer, setting to 0\n", line[2])
 		}
@@ -62,26 +62,22 @@ func main() {
 		person := Person{
 			firstName: line[0],
 			lastName:  line[1],
-			age:       int(personAge),
+			age:       personAge,
 			state:     line[3],
 		}
-		// Print out the person struct
-		// fmt.Println(person)
 
 		currState := line[3]
 
 		// Append the person to the correct map and slice
-		if person.age >= 30 {
+		if personAge >= 30 {
 			// Check if the map has set a value for the current state
 			_, stExist := peopleOver30[currState]
 
 			// If the map has already set a value for the current state, append the map
 			// Otherwise make a new slice with the current person
 			if stExist {
-				//fmt.Printf("Over 30 state %s\n", currState)
 				peopleOver30[currState] = append(peopleOver30[currState], person)
 			} else {
-				//fmt.Printf("NEW STATE: Over 30 state %s\n", currState)
 				peopleOver30[currState] = []Person{person}
 			}
 		} else {
@@ -89,16 +85,15 @@ func main() {
 			// If the map has already set a value for the current state, append the map
 			// Otherwise make a new slice with the current person
 			if stExist {
-				//fmt.Printf("Under 30 state %s\n", currState)
 				peopleUnder30[currState] = append(peopleUnder30[currState], person)
 			} else {
-				//fmt.Printf("NEW STATE: Under 30 state %s\n", currState)
 				peopleUnder30[currState] = []Person{person}
 			}
 		}
 	}
 
 	// Output
+
 	fmt.Println("30+ Years Old")
 	fmt.Println("--------------------")
 
