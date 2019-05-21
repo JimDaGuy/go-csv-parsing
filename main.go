@@ -7,12 +7,13 @@ import (
 	"io"
 	"log"
 	"os"
+	"strconv"
 )
 
 type Person struct {
 	firstName string
 	lastName  string
-	age       string
+	age       int
 	state     string
 }
 
@@ -25,9 +26,13 @@ func main() {
 
 	// Parse csv file
 	reader := csv.NewReader(bufio.NewReader(csvFile))
-	// Slice to hold all the people in it
-	var people []Person
 
+	// Grouping the records into two groups as stated in the assignment
+	// Splitting the groups into states using a map
+	var peopleOver30 = make(map[string][]Person)
+	var peopleUnder30 = make(map[string][]Person)
+
+	headerline := true
 	// Read through lines of the file
 	for {
 		// Read next line
@@ -41,17 +46,80 @@ func main() {
 			log.Fatal(err2)
 		}
 
+		// Skip headerline
+		if headerline {
+			headerline = false
+			continue
+		}
+
+		// Convert age string
+		personAge, err3 := strconv.ParseInt(line[2], 10, 0)
+		if err3 != nil {
+			fmt.Printf("Error converting \"%s\" to integer, setting to 0\n", line[2])
+		}
+
 		// Store line in Person struct
 		person := Person{
 			firstName: line[0],
 			lastName:  line[1],
-			age:       line[2],
+			age:       int(personAge),
 			state:     line[3],
 		}
 		// Print out the person struct
-		fmt.Println(person)
-		// Append the person to a slice of people depending on their age
-		people = append(people, person)
+		// fmt.Println(person)
+
+		currState := line[3]
+
+		// Append the person to the correct map and slice
+		if person.age >= 30 {
+			// Check if the map has set a value for the current state
+			_, stExist := peopleOver30[currState]
+
+			// If the map has already set a value for the current state, append the map
+			// Otherwise make a new slice with the current person
+			if stExist {
+				//fmt.Printf("Over 30 state %s\n", currState)
+				peopleOver30[currState] = append(peopleOver30[currState], person)
+			} else {
+				//fmt.Printf("NEW STATE: Over 30 state %s\n", currState)
+				peopleOver30[currState] = []Person{person}
+			}
+		} else {
+			_, stExist := peopleUnder30[currState]
+			// If the map has already set a value for the current state, append the map
+			// Otherwise make a new slice with the current person
+			if stExist {
+				//fmt.Printf("Under 30 state %s\n", currState)
+				peopleUnder30[currState] = append(peopleUnder30[currState], person)
+			} else {
+				//fmt.Printf("NEW STATE: Under 30 state %s\n", currState)
+				peopleUnder30[currState] = []Person{person}
+			}
+		}
 	}
-	fmt.Println("Hello World!")
+
+	// Output
+	fmt.Println("30+ Years Old")
+	fmt.Println("--------------------")
+
+	// Over 30 Map
+	for state, people := range peopleOver30 {
+		fmt.Printf("State: %s\n", state)
+		for _, person := range people {
+			fmt.Printf("Document: %s %s, %s, %v\n", person.firstName, person.lastName, person.state, person.age)
+		}
+		fmt.Println("")
+	}
+
+	fmt.Println("<30 Years Old")
+	fmt.Println("--------------------")
+
+	// Under 30 Map
+	for state, people := range peopleUnder30 {
+		fmt.Printf("State: %s\n", state)
+		for _, person := range people {
+			fmt.Printf("Document: %s %s, %s, %v\n", person.firstName, person.lastName, person.state, person.age)
+		}
+		fmt.Println("")
+	}
 }
